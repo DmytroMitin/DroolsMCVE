@@ -10,19 +10,6 @@ import org.kie.api.time.SessionPseudoClock
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 
-class SessionListener(kieSession: KieSession, var triggerMap: Map[String, Int] = Map.empty) {
-
-  kieSession.addEventListener(new DefaultAgendaEventListener() {
-    override def afterMatchFired(event: AfterMatchFiredEvent): Unit = {
-      super.afterMatchFired(event)
-      val ruleName = event.getMatch.getRule.getName
-      triggerMap = triggerMap ++ List(ruleName -> (getCount(ruleName) + 1))
-    }
-  })
-
-  def getCount(key: String): Int = triggerMap.getOrElse(key, 0)
-}
-
 class DroolTest extends AsyncWordSpec with Matchers {
   // Testing KIE Setup
   val kFactory: KieServices = KieServices.Factory.get
@@ -75,7 +62,9 @@ class DroolTest extends AsyncWordSpec with Matchers {
         kieSession.fireAllRules
       })
       sListener.getCount("throttle state activated") mustBe 1 // THIS TEST SUCCEEDS
-      sListener.getCount("throttle state deactivated") mustBe 1 // !!! THIS TEST FAILS !!!
+      val c = sListener.getCount("throttle state deactivated")
+      println(c)
+      c mustBe 1 // !!! THIS TEST FAILS !!!
     }
   }
 }
